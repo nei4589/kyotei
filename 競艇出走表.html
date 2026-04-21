@@ -1,0 +1,1774 @@
+<!DOCTYPE html>
+<!-- saved from url=(0051)file:///C:/Users/admin/Downloads/kyotei_list_2.html -->
+<html lang="ja"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>競艇出走表</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#080c14;--s1:#0f1623;--s2:#161f30;--s3:#1c2840;
+  --border:#1e3558;--accent:#00d4ff;--accent2:#ff6b00;
+  --gold:#ffd700;--green:#22c55e;--red:#ef4444;
+  --text:#e8edf5;--dim:#5a7298;
+}
+body{font-family:'Hiragino Sans','Meiryo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+header{background:var(--s1);border-bottom:1px solid var(--border);padding:10px 16px;
+  display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.logo{font-size:16px;font-weight:900;color:var(--accent);}
+.logo span{color:var(--accent2);}
+.date{font-size:12px;color:var(--dim);}
+
+.wrap{max-width:1200px;margin:0 auto;padding:14px 10px;}
+
+/* ローディング */
+.loading{text-align:center;padding:60px;color:var(--dim);}
+.sp{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);
+  border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 16px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* 会場タブ */
+.venue-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;
+  background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:10px;}
+.vtab{padding:7px 12px;background:var(--s2);border:1px solid var(--border);border-radius:7px;
+  cursor:pointer;font-size:13px;font-weight:700;color:var(--dim);transition:all .15s;white-space:nowrap;}
+.vtab:hover{border-color:var(--accent);color:var(--accent);}
+.vtab.on{background:rgba(0,212,255,.15);border-color:var(--accent);color:var(--accent);}
+.vtab .cnt{font-size:10px;opacity:.7;margin-left:3px;}
+
+/* レース一覧 */
+.races-grid{display:flex;flex-direction:column;gap:12px;}
+
+.race-card{background:var(--s1);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.race-head{background:var(--s2);padding:10px 14px;display:flex;align-items:center;
+  justify-content:space-between;border-bottom:1px solid var(--border);cursor:pointer;}
+.race-head:hover{background:var(--s3);}
+.race-num{font-size:18px;font-weight:900;color:var(--accent);margin-right:10px;}
+.race-title{font-size:13px;color:var(--dim);}
+.race-meta{display:flex;gap:8px;align-items:center;}
+.race-dist{font-size:11px;color:var(--dim);}
+.race-time{font-size:11px;color:var(--dim);}
+.toggle-icon{color:var(--dim);font-size:12px;transition:transform .2s;}
+.toggle-icon.open{transform:rotate(180deg);}
+
+.race-body{display:none;overflow-x:auto;}
+.race-body.show{display:block;}
+
+/* 選手テーブル */
+.btable{width:100%;border-collapse:collapse;min-width:600px;}
+.btable th{background:var(--s3);font-size:10px;color:var(--dim);
+  padding:6px 8px;text-align:center;font-weight:700;white-space:nowrap;}
+.btable td{padding:8px 8px;text-align:center;border-top:1px solid var(--border);font-size:12px;white-space:nowrap;}
+.btable tr:hover td{background:rgba(0,212,255,.02);}
+
+.ln{width:28px;height:28px;border-radius:5px;display:inline-flex;align-items:center;
+  justify-content:center;font-size:14px;font-weight:900;font-family:monospace;}
+.l1{background:#e74c3c;color:#fff}.l2{background:#3498db;color:#fff}
+.l3{background:#e67e22;color:#fff}.l4{background:#27ae60;color:#000}
+.l5{background:#e91e8c;color:#fff}.l6{background:#2c3e50;color:#fff}
+
+.rank{font-size:10px;padding:1px 4px;border-radius:3px;font-weight:700;}
+.A1{background:rgba(255,215,0,.2);color:var(--gold);border:1px solid var(--gold);}
+.A2{background:rgba(0,212,255,.15);color:var(--accent);border:1px solid var(--accent);}
+.B1{background:rgba(90,114,152,.15);color:#8fa8c8;border:1px solid #2a3a50;}
+.B2{background:rgba(60,80,110,.1);color:#5a7298;border:1px solid #1e2e40;}
+
+.st-f{color:var(--green);font-weight:700;}
+.st-s{color:var(--red);}
+.st-m{color:var(--gold);}
+.bar{height:4px;background:var(--s3);border-radius:2px;overflow:hidden;width:50px;display:inline-block;vertical-align:middle;margin-left:3px;}
+.bfill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent2),#cc3300);}
+
+/* 天候チップ */
+.wx-chips{display:flex;gap:6px;flex-wrap:wrap;padding:8px 14px;border-bottom:1px solid var(--border);background:rgba(0,0,0,.2);}
+.wx-chip{font-size:11px;color:var(--dim);background:var(--s2);border:1px solid var(--border);
+  border-radius:5px;padding:2px 8px;}
+.wx-chip strong{color:var(--text);}
+.wx-chip.warn{border-color:var(--accent2);color:var(--accent2);}
+
+/* コピーボタン */
+.copy-btn{background:rgba(0,212,255,.1);border:1px solid var(--accent);border-radius:6px;
+  color:var(--accent);font-size:11px;padding:3px 10px;cursor:pointer;transition:all .15s;}
+.copy-btn:hover{background:rgba(0,212,255,.2);}
+.copy-btn.copied{background:rgba(34,197,94,.1);border-color:var(--green);color:var(--green);}
+
+/* エラー */
+.error{background:rgba(239,68,68,.08);border:1px solid var(--red);border-radius:10px;
+  padding:14px;color:var(--red);font-size:13px;margin-bottom:12px;}
+
+footer{text-align:center;font-size:11px;color:var(--dim);padding:16px;border-top:1px solid var(--border);margin-top:16px;}
+
+@media(max-width:600px){
+  .venue-tabs{gap:4px;}
+  .vtab{padding:5px 8px;font-size:12px;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">競艇<span>出走表</span></div>
+  <div class="date" id="dateDisp">2026年4月22日</div>
+</header>
+
+<div class="wrap">
+  <div id="mainContent">
+    <div class="venue-tabs" id="venueTabs">
+    <button class="vtab on" onclick="switchVenue(1)">
+      桐生
+    </button>
+    <button class="vtab " onclick="switchVenue(5)">
+      多摩川
+    </button>
+    <button class="vtab " onclick="switchVenue(6)">
+      浜名湖
+    </button>
+    <button class="vtab " onclick="switchVenue(11)">
+      びわこ
+    </button>
+    <button class="vtab " onclick="switchVenue(13)">
+      尼崎
+    </button>
+    <button class="vtab " onclick="switchVenue(14)">
+      鳴門
+    </button>
+    <button class="vtab " onclick="switchVenue(15)">
+      丸亀
+    </button>
+    <button class="vtab " onclick="switchVenue(17)">
+      宮島
+    </button>
+    <button class="vtab " onclick="switchVenue(18)">
+      徳山
+    </button>
+    <button class="vtab " onclick="switchVenue(20)">
+      若松
+    </button>
+    <button class="vtab " onclick="switchVenue(22)">
+      福岡
+    </button>
+    <button class="vtab " onclick="switchVenue(24)">
+      大村
+    </button></div>
+    <div style="margin-bottom:12px">
+  <button onclick="copyAllRaces()" id="allCopyBtn" style="width:100%;padding:13px;background:linear-gradient(135deg,var(--accent),#007fa8);border:none;border-radius:10px;color:#000;font-size:15px;font-weight:900;cursor:pointer;">
+    📋 全レース一括コピー（このチャットに貼るだけで予想が出ます）
+  </button>
+</div>
+<div id="racesArea"><div class="races-grid">
+    <div class="race-card" id="card_1">
+      <div class="race-head" onclick="toggleRace(1)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="race-num">1R</span>
+          <div>
+            <div style="font-size:13px;font-weight:700">第29回東京スポーツ杯</div>
+            <div class="race-title">予選 / 1800m / 締切15:19</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="copy-btn" id="copybtn_1" onclick="event.stopPropagation();copyRace(1)">📋 コピー</button>
+          <span class="toggle-icon" id="icon_1">▼</span>
+        </div>
+      </div>
+      
+      <div class="race-body show" id="body_1">
+        <table class="btable">
+          <thead><tr>
+            <th>枠</th><th>選手名</th><th>級</th>
+            <th>全国勝率</th><th>当地勝率</th><th>2連率</th>
+            <th>平均ST</th><th>F/L</th><th>モーター2連率</th>
+            <th>展示</th><th>展示ST</th><th>進入</th>
+          </tr></thead>
+          <tbody><tr>
+      <td><span class="ln l1">1</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">品川 賢次</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>4.44</td>
+      <td>4.22</td>
+      <td>20.0%</td>
+      <td><span class="st-m">0.18</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>56.7%<div class="bar"><div class="bfill" style="width:56.72%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">1コース</td>
+    </tr><tr>
+      <td><span class="ln l2">2</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">山田 晃大</td>
+      <td><span class="rank A2">A2</span></td>
+      <td>5.64</td>
+      <td>5.55</td>
+      <td>37.0%</td>
+      <td><span class="st-f">0.13</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>24.3%<div class="bar"><div class="bfill" style="width:24.32%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">2コース</td>
+    </tr><tr>
+      <td><span class="ln l3">3</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">岡部 貴司</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>4.93</td>
+      <td>4.63</td>
+      <td>25.9%</td>
+      <td><span class="st-m">0.15</span></td>
+      <td style="font-size:11px">F1/L0</td>
+      <td>24.6%<div class="bar"><div class="bfill" style="width:24.56%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">3コース</td>
+    </tr><tr>
+      <td><span class="ln l4">4</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">川原 涼</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>5.57</td>
+      <td>6.29</td>
+      <td>39.1%</td>
+      <td><span class="st-m">0.17</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>32.9%<div class="bar"><div class="bfill" style="width:32.89%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">4コース</td>
+    </tr><tr>
+      <td><span class="ln l5">5</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">小森 信雄</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>4.41</td>
+      <td>5.11</td>
+      <td>21.2%</td>
+      <td><span class="st-m">0.18</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>33.8%<div class="bar"><div class="bfill" style="width:33.75%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">5コース</td>
+    </tr><tr>
+      <td><span class="ln l6">6</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">松本 純平</td>
+      <td><span class="rank A1">A1</span></td>
+      <td>6.39</td>
+      <td>6.25</td>
+      <td>41.9%</td>
+      <td><span class="st-m">0.16</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>25.8%<div class="bar"><div class="bfill" style="width:25.76%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">6コース</td>
+    </tr></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="race-card" id="card_2">
+      <div class="race-head" onclick="toggleRace(2)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="race-num">2R</span>
+          <div>
+            <div style="font-size:13px;font-weight:700">第29回東京スポーツ杯</div>
+            <div class="race-title">予選 / 1800m / 締切15:45</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="copy-btn" id="copybtn_2" onclick="event.stopPropagation();copyRace(2)">📋 コピー</button>
+          <span class="toggle-icon" id="icon_2">▼</span>
+        </div>
+      </div>
+      
+      <div class="race-body " id="body_2">
+        <table class="btable">
+          <thead><tr>
+            <th>枠</th><th>選手名</th><th>級</th>
+            <th>全国勝率</th><th>当地勝率</th><th>2連率</th>
+            <th>平均ST</th><th>F/L</th><th>モーター2連率</th>
+            <th>展示</th><th>展示ST</th><th>進入</th>
+          </tr></thead>
+          <tbody><tr>
+      <td><span class="ln l1">1</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">山崎 昂介</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>4.85</td>
+      <td>2.86</td>
+      <td>29.2%</td>
+      <td><span class="st-m">0.19</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>33.8%<div class="bar"><div class="bfill" style="width:33.77%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">1コース</td>
+    </tr><tr>
+      <td><span class="ln l2">2</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">都築 正治</td>
+      <td><span class="rank A2">A2</span></td>
+      <td>5.29</td>
+      <td>5.67</td>
+      <td>36.4%</td>
+      <td><span class="st-m">0.16</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>39.7%<div class="bar"><div class="bfill" style="width:39.74%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">2コース</td>
+    </tr><tr>
+      <td><span class="ln l3">3</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">菊池 峰晴</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>4.53</td>
+      <td>5.75</td>
+      <td>26.3%</td>
+      <td><span class="st-s">0.20</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>37.9%<div class="bar"><div class="bfill" style="width:37.88%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">3コース</td>
+    </tr><tr>
+      <td><span class="ln l4">4</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">梶山 涼斗</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>5.10</td>
+      <td>0.00</td>
+      <td>29.6%</td>
+      <td><span class="st-f">0.13</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>12.3%<div class="bar"><div class="bfill" style="width:12.28%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">4コース</td>
+    </tr><tr>
+      <td><span class="ln l5">5</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">柏野 幸二</td>
+      <td><span class="rank A2">A2</span></td>
+      <td>5.88</td>
+      <td>0.00</td>
+      <td>37.1%</td>
+      <td><span class="st-f">0.12</span></td>
+      <td style="font-size:11px">F1/L0</td>
+      <td>35.7%<div class="bar"><div class="bfill" style="width:35.71%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">5コース</td>
+    </tr><tr>
+      <td><span class="ln l6">6</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">鶴本 崇文</td>
+      <td><span class="rank A1">A1</span></td>
+      <td>6.41</td>
+      <td>6.75</td>
+      <td>45.0%</td>
+      <td><span class="st-m">0.18</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>34.1%<div class="bar"><div class="bfill" style="width:34.09%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">6コース</td>
+    </tr></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="race-card" id="card_3">
+      <div class="race-head" onclick="toggleRace(3)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="race-num">3R</span>
+          <div>
+            <div style="font-size:13px;font-weight:700">第29回東京スポーツ杯</div>
+            <div class="race-title">予選 / 1800m / 締切16:11</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="copy-btn" id="copybtn_3" onclick="event.stopPropagation();copyRace(3)">📋 コピー</button>
+          <span class="toggle-icon" id="icon_3">▼</span>
+        </div>
+      </div>
+      
+      <div class="race-body " id="body_3">
+        <table class="btable">
+          <thead><tr>
+            <th>枠</th><th>選手名</th><th>級</th>
+            <th>全国勝率</th><th>当地勝率</th><th>2連率</th>
+            <th>平均ST</th><th>F/L</th><th>モーター2連率</th>
+            <th>展示</th><th>展示ST</th><th>進入</th>
+          </tr></thead>
+          <tbody><tr>
+      <td><span class="ln l1">1</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">藤生 雄人</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>5.69</td>
+      <td>5.78</td>
+      <td>36.6%</td>
+      <td><span class="st-m">0.17</span></td>
+      <td style="font-size:11px">F1/L0</td>
+      <td>31.7%<div class="bar"><div class="bfill" style="width:31.71%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">1コース</td>
+    </tr><tr>
+      <td><span class="ln l2">2</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">吉川 晴人</td>
+      <td><span class="rank A2">A2</span></td>
+      <td>5.83</td>
+      <td>0.00</td>
+      <td>39.5%</td>
+      <td><span class="st-m">0.15</span></td>
+      <td style="font-size:11px">F1/L0</td>
+      <td>26.4%<div class="bar"><div class="bfill" style="width:26.39%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">2コース</td>
+    </tr><tr>
+      <td><span class="ln l3">3</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">畑田 汰一</td>
+      <td><span class="rank A1">A1</span></td>
+      <td>6.37</td>
+      <td>8.13</td>
+      <td>37.6%</td>
+      <td><span class="st-f">0.12</span></td>
+      <td style="font-size:11px">F1/L0</td>
+      <td>24.7%<div class="bar"><div class="bfill" style="width:24.66%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">3コース</td>
+    </tr><tr>
+      <td><span class="ln l4">4</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">佐竹 太一</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>5.18</td>
+      <td>5.25</td>
+      <td>33.0%</td>
+      <td><span class="st-s">0.21</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>21.5%<div class="bar"><div class="bfill" style="width:21.54%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">4コース</td>
+    </tr><tr>
+      <td><span class="ln l5">5</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">井上 尚悟</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>4.84</td>
+      <td>3.76</td>
+      <td>30.3%</td>
+      <td><span class="st-m">0.18</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>31.5%<div class="bar"><div class="bfill" style="width:31.51%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">5コース</td>
+    </tr><tr>
+      <td><span class="ln l6">6</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">重木 輝彦</td>
+      <td><span class="rank A1">A1</span></td>
+      <td>6.83</td>
+      <td>6.32</td>
+      <td>49.1%</td>
+      <td><span class="st-m">0.17</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>26.7%<div class="bar"><div class="bfill" style="width:26.67%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">6コース</td>
+    </tr></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="race-card" id="card_4">
+      <div class="race-head" onclick="toggleRace(4)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="race-num">4R</span>
+          <div>
+            <div style="font-size:13px;font-weight:700">第29回東京スポーツ杯</div>
+            <div class="race-title">予選 / 1800m / 締切16:39</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="copy-btn" id="copybtn_4" onclick="event.stopPropagation();copyRace(4)">📋 コピー</button>
+          <span class="toggle-icon" id="icon_4">▼</span>
+        </div>
+      </div>
+      
+      <div class="race-body " id="body_4">
+        <table class="btable">
+          <thead><tr>
+            <th>枠</th><th>選手名</th><th>級</th>
+            <th>全国勝率</th><th>当地勝率</th><th>2連率</th>
+            <th>平均ST</th><th>F/L</th><th>モーター2連率</th>
+            <th>展示</th><th>展示ST</th><th>進入</th>
+          </tr></thead>
+          <tbody><tr>
+      <td><span class="ln l1">1</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">三松 直美</td>
+      <td><span class="rank B2">B2</span></td>
+      <td>2.38</td>
+      <td>1.67</td>
+      <td>0.0%</td>
+      <td><span class="st-f">0.00</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>21.7%<div class="bar"><div class="bfill" style="width:21.67%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">1コース</td>
+    </tr><tr>
+      <td><span class="ln l2">2</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">木場 悠介</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>5.23</td>
+      <td>4.89</td>
+      <td>35.8%</td>
+      <td><span class="st-f">0.14</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>24.2%<div class="bar"><div class="bfill" style="width:24.24%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">2コース</td>
+    </tr><tr>
+      <td><span class="ln l3">3</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">上村 慎太郎</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>4.07</td>
+      <td>4.70</td>
+      <td>18.3%</td>
+      <td><span class="st-s">0.22</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>35.1%<div class="bar"><div class="bfill" style="width:35.06%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">3コース</td>
+    </tr><tr>
+      <td><span class="ln l4">4</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">丸野 一樹</td>
+      <td><span class="rank A1">A1</span></td>
+      <td>6.53</td>
+      <td>0.00</td>
+      <td>37.4%</td>
+      <td><span class="st-m">0.15</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>42.4%<div class="bar"><div class="bfill" style="width:42.42%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">4コース</td>
+    </tr><tr>
+      <td><span class="ln l5">5</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">豊田 健士郎</td>
+      <td><span class="rank A1">A1</span></td>
+      <td>6.90</td>
+      <td>6.58</td>
+      <td>48.1%</td>
+      <td><span class="st-f">0.14</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>31.3%<div class="bar"><div class="bfill" style="width:31.33%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">5コース</td>
+    </tr><tr>
+      <td><span class="ln l6">6</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">北中 元樹</td>
+      <td><span class="rank A2">A2</span></td>
+      <td>6.58</td>
+      <td>4.64</td>
+      <td>52.2%</td>
+      <td><span class="st-m">0.17</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>26.5%<div class="bar"><div class="bfill" style="width:26.47%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">6コース</td>
+    </tr></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="race-card" id="card_5">
+      <div class="race-head" onclick="toggleRace(5)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="race-num">5R</span>
+          <div>
+            <div style="font-size:13px;font-weight:700">第29回東京スポーツ杯</div>
+            <div class="race-title">予選 / 1800m / 締切17:08</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="copy-btn" id="copybtn_5" onclick="event.stopPropagation();copyRace(5)">📋 コピー</button>
+          <span class="toggle-icon" id="icon_5">▼</span>
+        </div>
+      </div>
+      
+      <div class="race-body " id="body_5">
+        <table class="btable">
+          <thead><tr>
+            <th>枠</th><th>選手名</th><th>級</th>
+            <th>全国勝率</th><th>当地勝率</th><th>2連率</th>
+            <th>平均ST</th><th>F/L</th><th>モーター2連率</th>
+            <th>展示</th><th>展示ST</th><th>進入</th>
+          </tr></thead>
+          <tbody><tr>
+      <td><span class="ln l1">1</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">大場 広孝</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>4.85</td>
+      <td>3.18</td>
+      <td>24.3%</td>
+      <td><span class="st-m">0.16</span></td>
+      <td style="font-size:11px">F1/L0</td>
+      <td>35.6%<div class="bar"><div class="bfill" style="width:35.63%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">1コース</td>
+    </tr><tr>
+      <td><span class="ln l2">2</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">向後 龍一</td>
+      <td><span class="rank A2">A2</span></td>
+      <td>5.77</td>
+      <td>6.30</td>
+      <td>39.7%</td>
+      <td><span class="st-m">0.15</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>32.0%<div class="bar"><div class="bfill" style="width:32%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">2コース</td>
+    </tr><tr>
+      <td><span class="ln l3">3</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">黄金井 力良</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>5.27</td>
+      <td>6.12</td>
+      <td>30.6%</td>
+      <td><span class="st-m">0.15</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>20.7%<div class="bar"><div class="bfill" style="width:20.69%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">3コース</td>
+    </tr><tr>
+      <td><span class="ln l4">4</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">谷本 幸司</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>5.21</td>
+      <td>5.11</td>
+      <td>32.0%</td>
+      <td><span class="st-m">0.18</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>31.5%<div class="bar"><div class="bfill" style="width:31.46%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">4コース</td>
+    </tr><tr>
+      <td><span class="ln l5">5</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">塩田 北斗</td>
+      <td><span class="rank A1">A1</span></td>
+      <td>6.24</td>
+      <td>6.77</td>
+      <td>31.5%</td>
+      <td><span class="st-f">0.14</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>38.6%<div class="bar"><div class="bfill" style="width:38.57%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">5コース</td>
+    </tr><tr>
+      <td><span class="ln l6">6</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">山地 正樹</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>5.02</td>
+      <td>4.35</td>
+      <td>30.3%</td>
+      <td><span class="st-m">0.18</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>32.6%<div class="bar"><div class="bfill" style="width:32.58%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">6コース</td>
+    </tr></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="race-card" id="card_6">
+      <div class="race-head" onclick="toggleRace(6)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="race-num">6R</span>
+          <div>
+            <div style="font-size:13px;font-weight:700">第29回東京スポーツ杯</div>
+            <div class="race-title">ドラドキ目玉 / 1800m / 締切17:37</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="copy-btn" id="copybtn_6" onclick="event.stopPropagation();copyRace(6)">📋 コピー</button>
+          <span class="toggle-icon" id="icon_6">▼</span>
+        </div>
+      </div>
+      
+      <div class="race-body " id="body_6">
+        <table class="btable">
+          <thead><tr>
+            <th>枠</th><th>選手名</th><th>級</th>
+            <th>全国勝率</th><th>当地勝率</th><th>2連率</th>
+            <th>平均ST</th><th>F/L</th><th>モーター2連率</th>
+            <th>展示</th><th>展示ST</th><th>進入</th>
+          </tr></thead>
+          <tbody><tr>
+      <td><span class="ln l1">1</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">東本 勝利</td>
+      <td><span class="rank A1">A1</span></td>
+      <td>5.97</td>
+      <td>6.19</td>
+      <td>36.0%</td>
+      <td><span class="st-m">0.15</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>35.5%<div class="bar"><div class="bfill" style="width:35.53%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">1コース</td>
+    </tr><tr>
+      <td><span class="ln l2">2</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">菊池 峰晴</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>4.53</td>
+      <td>5.75</td>
+      <td>26.3%</td>
+      <td><span class="st-s">0.20</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>37.9%<div class="bar"><div class="bfill" style="width:37.88%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">2コース</td>
+    </tr><tr>
+      <td><span class="ln l3">3</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">増田 進</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>4.03</td>
+      <td>3.67</td>
+      <td>16.0%</td>
+      <td><span class="st-m">0.18</span></td>
+      <td style="font-size:11px">F1/L0</td>
+      <td>18.3%<div class="bar"><div class="bfill" style="width:18.33%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">3コース</td>
+    </tr><tr>
+      <td><span class="ln l4">4</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">本岡 勝利</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>4.15</td>
+      <td>0.00</td>
+      <td>14.9%</td>
+      <td><span class="st-m">0.16</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>13.6%<div class="bar"><div class="bfill" style="width:13.64%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">4コース</td>
+    </tr><tr>
+      <td><span class="ln l5">5</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">川原 涼</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>5.57</td>
+      <td>6.29</td>
+      <td>39.1%</td>
+      <td><span class="st-m">0.17</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>32.9%<div class="bar"><div class="bfill" style="width:32.89%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">5コース</td>
+    </tr><tr>
+      <td><span class="ln l6">6</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">高木 茉白</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>3.34</td>
+      <td>0.00</td>
+      <td>9.6%</td>
+      <td><span class="st-m">0.18</span></td>
+      <td style="font-size:11px">F1/L0</td>
+      <td>28.4%<div class="bar"><div class="bfill" style="width:28.41%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">6コース</td>
+    </tr></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="race-card" id="card_7">
+      <div class="race-head" onclick="toggleRace(7)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="race-num">7R</span>
+          <div>
+            <div style="font-size:13px;font-weight:700">第29回東京スポーツ杯</div>
+            <div class="race-title">ドラドキ3 / 1800m / 締切18:04</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="copy-btn" id="copybtn_7" onclick="event.stopPropagation();copyRace(7)">📋 コピー</button>
+          <span class="toggle-icon" id="icon_7">▼</span>
+        </div>
+      </div>
+      
+      <div class="race-body " id="body_7">
+        <table class="btable">
+          <thead><tr>
+            <th>枠</th><th>選手名</th><th>級</th>
+            <th>全国勝率</th><th>当地勝率</th><th>2連率</th>
+            <th>平均ST</th><th>F/L</th><th>モーター2連率</th>
+            <th>展示</th><th>展示ST</th><th>進入</th>
+          </tr></thead>
+          <tbody><tr>
+      <td><span class="ln l1">1</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">柏野 幸二</td>
+      <td><span class="rank A2">A2</span></td>
+      <td>5.88</td>
+      <td>0.00</td>
+      <td>37.1%</td>
+      <td><span class="st-f">0.12</span></td>
+      <td style="font-size:11px">F1/L0</td>
+      <td>35.7%<div class="bar"><div class="bfill" style="width:35.71%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">1コース</td>
+    </tr><tr>
+      <td><span class="ln l2">2</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">佐藤 駿介</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>3.83</td>
+      <td>3.50</td>
+      <td>18.2%</td>
+      <td><span class="st-m">0.17</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>37.2%<div class="bar"><div class="bfill" style="width:37.18%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">2コース</td>
+    </tr><tr>
+      <td><span class="ln l3">3</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">常住 蓮</td>
+      <td><span class="rank A1">A1</span></td>
+      <td>7.48</td>
+      <td>5.00</td>
+      <td>59.2%</td>
+      <td><span class="st-f">0.12</span></td>
+      <td style="font-size:11px">F1/L0</td>
+      <td>35.5%<div class="bar"><div class="bfill" style="width:35.53%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">3コース</td>
+    </tr><tr>
+      <td><span class="ln l4">4</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">田中 瀬里奈</td>
+      <td><span class="rank B2">B2</span></td>
+      <td>1.54</td>
+      <td>1.11</td>
+      <td>1.6%</td>
+      <td><span class="st-m">0.19</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>24.5%<div class="bar"><div class="bfill" style="width:24.49%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">4コース</td>
+    </tr><tr>
+      <td><span class="ln l5">5</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">品川 賢次</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>4.44</td>
+      <td>4.22</td>
+      <td>20.0%</td>
+      <td><span class="st-m">0.18</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>56.7%<div class="bar"><div class="bfill" style="width:56.72%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">5コース</td>
+    </tr><tr>
+      <td><span class="ln l6">6</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">福島 陽子</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>3.93</td>
+      <td>4.60</td>
+      <td>20.0%</td>
+      <td><span class="st-s">0.20</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>34.3%<div class="bar"><div class="bfill" style="width:34.25%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">6コース</td>
+    </tr></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="race-card" id="card_8">
+      <div class="race-head" onclick="toggleRace(8)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="race-num">8R</span>
+          <div>
+            <div style="font-size:13px;font-weight:700">第29回東京スポーツ杯</div>
+            <div class="race-title">ドラドキ5 / 1800m / 締切18:32</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="copy-btn" id="copybtn_8" onclick="event.stopPropagation();copyRace(8)">📋 コピー</button>
+          <span class="toggle-icon" id="icon_8">▼</span>
+        </div>
+      </div>
+      
+      <div class="race-body " id="body_8">
+        <table class="btable">
+          <thead><tr>
+            <th>枠</th><th>選手名</th><th>級</th>
+            <th>全国勝率</th><th>当地勝率</th><th>2連率</th>
+            <th>平均ST</th><th>F/L</th><th>モーター2連率</th>
+            <th>展示</th><th>展示ST</th><th>進入</th>
+          </tr></thead>
+          <tbody><tr>
+      <td><span class="ln l1">1</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">藤原 早菜</td>
+      <td><span class="rank A2">A2</span></td>
+      <td>5.73</td>
+      <td>0.00</td>
+      <td>35.8%</td>
+      <td><span class="st-m">0.19</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>31.2%<div class="bar"><div class="bfill" style="width:31.17%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">1コース</td>
+    </tr><tr>
+      <td><span class="ln l2">2</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">一色 凌雅</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>5.19</td>
+      <td>3.83</td>
+      <td>30.5%</td>
+      <td><span class="st-s">0.20</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>42.7%<div class="bar"><div class="bfill" style="width:42.67%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">2コース</td>
+    </tr><tr>
+      <td><span class="ln l3">3</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">佐竹 太一</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>5.18</td>
+      <td>5.25</td>
+      <td>33.0%</td>
+      <td><span class="st-s">0.21</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>21.5%<div class="bar"><div class="bfill" style="width:21.54%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">3コース</td>
+    </tr><tr>
+      <td><span class="ln l4">4</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">山崎 昂介</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>4.85</td>
+      <td>2.86</td>
+      <td>29.2%</td>
+      <td><span class="st-m">0.19</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>33.8%<div class="bar"><div class="bfill" style="width:33.77%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">4コース</td>
+    </tr><tr>
+      <td><span class="ln l5">5</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">丸野 一樹</td>
+      <td><span class="rank A1">A1</span></td>
+      <td>6.53</td>
+      <td>0.00</td>
+      <td>37.4%</td>
+      <td><span class="st-m">0.15</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>42.4%<div class="bar"><div class="bfill" style="width:42.42%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">5コース</td>
+    </tr><tr>
+      <td><span class="ln l6">6</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">岡部 貴司</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>4.93</td>
+      <td>4.63</td>
+      <td>25.9%</td>
+      <td><span class="st-m">0.15</span></td>
+      <td style="font-size:11px">F1/L0</td>
+      <td>24.6%<div class="bar"><div class="bfill" style="width:24.56%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">6コース</td>
+    </tr></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="race-card" id="card_9">
+      <div class="race-head" onclick="toggleRace(9)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="race-num">9R</span>
+          <div>
+            <div style="font-size:13px;font-weight:700">第29回東京スポーツ杯</div>
+            <div class="race-title">予選特賞 / 1800m / 締切19:02</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="copy-btn" id="copybtn_9" onclick="event.stopPropagation();copyRace(9)">📋 コピー</button>
+          <span class="toggle-icon" id="icon_9">▼</span>
+        </div>
+      </div>
+      
+      <div class="race-body " id="body_9">
+        <table class="btable">
+          <thead><tr>
+            <th>枠</th><th>選手名</th><th>級</th>
+            <th>全国勝率</th><th>当地勝率</th><th>2連率</th>
+            <th>平均ST</th><th>F/L</th><th>モーター2連率</th>
+            <th>展示</th><th>展示ST</th><th>進入</th>
+          </tr></thead>
+          <tbody><tr>
+      <td><span class="ln l1">1</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">都築 正治</td>
+      <td><span class="rank A2">A2</span></td>
+      <td>5.29</td>
+      <td>5.67</td>
+      <td>36.4%</td>
+      <td><span class="st-m">0.16</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>39.7%<div class="bar"><div class="bfill" style="width:39.74%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">1コース</td>
+    </tr><tr>
+      <td><span class="ln l2">2</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">松本 純平</td>
+      <td><span class="rank A1">A1</span></td>
+      <td>6.39</td>
+      <td>6.25</td>
+      <td>41.9%</td>
+      <td><span class="st-m">0.16</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>25.8%<div class="bar"><div class="bfill" style="width:25.76%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">2コース</td>
+    </tr><tr>
+      <td><span class="ln l3">3</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">土井 歩夢</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>5.73</td>
+      <td>5.43</td>
+      <td>33.7%</td>
+      <td><span class="st-m">0.17</span></td>
+      <td style="font-size:11px">F1/L0</td>
+      <td>22.7%<div class="bar"><div class="bfill" style="width:22.73%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">3コース</td>
+    </tr><tr>
+      <td><span class="ln l4">4</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">山地 正樹</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>5.02</td>
+      <td>4.35</td>
+      <td>30.3%</td>
+      <td><span class="st-m">0.18</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>32.6%<div class="bar"><div class="bfill" style="width:32.58%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">4コース</td>
+    </tr><tr>
+      <td><span class="ln l5">5</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">畑田 汰一</td>
+      <td><span class="rank A1">A1</span></td>
+      <td>6.37</td>
+      <td>8.13</td>
+      <td>37.6%</td>
+      <td><span class="st-f">0.12</span></td>
+      <td style="font-size:11px">F1/L0</td>
+      <td>24.7%<div class="bar"><div class="bfill" style="width:24.66%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">5コース</td>
+    </tr><tr>
+      <td><span class="ln l6">6</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">石村 日奈那</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>2.30</td>
+      <td>2.15</td>
+      <td>4.3%</td>
+      <td><span class="st-s">0.21</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>20.0%<div class="bar"><div class="bfill" style="width:20%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">6コース</td>
+    </tr></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="race-card" id="card_10">
+      <div class="race-head" onclick="toggleRace(10)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="race-num">10R</span>
+          <div>
+            <div style="font-size:13px;font-weight:700">第29回東京スポーツ杯</div>
+            <div class="race-title">予選特賞 / 1800m / 締切19:32</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="copy-btn" id="copybtn_10" onclick="event.stopPropagation();copyRace(10)">📋 コピー</button>
+          <span class="toggle-icon" id="icon_10">▼</span>
+        </div>
+      </div>
+      
+      <div class="race-body " id="body_10">
+        <table class="btable">
+          <thead><tr>
+            <th>枠</th><th>選手名</th><th>級</th>
+            <th>全国勝率</th><th>当地勝率</th><th>2連率</th>
+            <th>平均ST</th><th>F/L</th><th>モーター2連率</th>
+            <th>展示</th><th>展示ST</th><th>進入</th>
+          </tr></thead>
+          <tbody><tr>
+      <td><span class="ln l1">1</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">渡邉 睦広</td>
+      <td><span class="rank A2">A2</span></td>
+      <td>5.59</td>
+      <td>5.74</td>
+      <td>36.4%</td>
+      <td><span class="st-m">0.17</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>33.3%<div class="bar"><div class="bfill" style="width:33.33%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">1コース</td>
+    </tr><tr>
+      <td><span class="ln l2">2</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">大橋 栄里佳</td>
+      <td><span class="rank A2">A2</span></td>
+      <td>5.44</td>
+      <td>3.11</td>
+      <td>34.9%</td>
+      <td><span class="st-m">0.18</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>23.6%<div class="bar"><div class="bfill" style="width:23.64%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">2コース</td>
+    </tr><tr>
+      <td><span class="ln l3">3</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">重木 輝彦</td>
+      <td><span class="rank A1">A1</span></td>
+      <td>6.83</td>
+      <td>6.32</td>
+      <td>49.1%</td>
+      <td><span class="st-m">0.17</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>26.7%<div class="bar"><div class="bfill" style="width:26.67%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">3コース</td>
+    </tr><tr>
+      <td><span class="ln l4">4</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">黄金井 力良</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>5.27</td>
+      <td>6.12</td>
+      <td>30.6%</td>
+      <td><span class="st-m">0.15</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>20.7%<div class="bar"><div class="bfill" style="width:20.69%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">4コース</td>
+    </tr><tr>
+      <td><span class="ln l5">5</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">鶴本 崇文</td>
+      <td><span class="rank A1">A1</span></td>
+      <td>6.41</td>
+      <td>6.75</td>
+      <td>45.0%</td>
+      <td><span class="st-m">0.18</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>34.1%<div class="bar"><div class="bfill" style="width:34.09%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">5コース</td>
+    </tr><tr>
+      <td><span class="ln l6">6</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">濱崎 誠</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>5.15</td>
+      <td>0.00</td>
+      <td>31.5%</td>
+      <td><span class="st-m">0.15</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>57.1%<div class="bar"><div class="bfill" style="width:57.14%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">6コース</td>
+    </tr></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="race-card" id="card_11">
+      <div class="race-head" onclick="toggleRace(11)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="race-num">11R</span>
+          <div>
+            <div style="font-size:13px;font-weight:700">第29回東京スポーツ杯</div>
+            <div class="race-title">予選特選 / 1800m / 締切20:04</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="copy-btn" id="copybtn_11" onclick="event.stopPropagation();copyRace(11)">📋 コピー</button>
+          <span class="toggle-icon" id="icon_11">▼</span>
+        </div>
+      </div>
+      
+      <div class="race-body " id="body_11">
+        <table class="btable">
+          <thead><tr>
+            <th>枠</th><th>選手名</th><th>級</th>
+            <th>全国勝率</th><th>当地勝率</th><th>2連率</th>
+            <th>平均ST</th><th>F/L</th><th>モーター2連率</th>
+            <th>展示</th><th>展示ST</th><th>進入</th>
+          </tr></thead>
+          <tbody><tr>
+      <td><span class="ln l1">1</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">豊田 健士郎</td>
+      <td><span class="rank A1">A1</span></td>
+      <td>6.90</td>
+      <td>6.58</td>
+      <td>48.1%</td>
+      <td><span class="st-f">0.14</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>31.3%<div class="bar"><div class="bfill" style="width:31.33%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">1コース</td>
+    </tr><tr>
+      <td><span class="ln l2">2</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">塩田 北斗</td>
+      <td><span class="rank A1">A1</span></td>
+      <td>6.24</td>
+      <td>6.77</td>
+      <td>31.5%</td>
+      <td><span class="st-f">0.14</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>38.6%<div class="bar"><div class="bfill" style="width:38.57%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">2コース</td>
+    </tr><tr>
+      <td><span class="ln l3">3</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">本岡 勝利</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>4.15</td>
+      <td>0.00</td>
+      <td>14.9%</td>
+      <td><span class="st-m">0.16</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>13.6%<div class="bar"><div class="bfill" style="width:13.64%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">3コース</td>
+    </tr><tr>
+      <td><span class="ln l4">4</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">佐藤 駿介</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>3.83</td>
+      <td>3.50</td>
+      <td>18.2%</td>
+      <td><span class="st-m">0.17</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>37.2%<div class="bar"><div class="bfill" style="width:37.18%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">4コース</td>
+    </tr><tr>
+      <td><span class="ln l5">5</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">山田 晃大</td>
+      <td><span class="rank A2">A2</span></td>
+      <td>5.64</td>
+      <td>5.55</td>
+      <td>37.0%</td>
+      <td><span class="st-f">0.13</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>24.3%<div class="bar"><div class="bfill" style="width:24.32%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">5コース</td>
+    </tr><tr>
+      <td><span class="ln l6">6</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">吉川 晴人</td>
+      <td><span class="rank A2">A2</span></td>
+      <td>5.83</td>
+      <td>0.00</td>
+      <td>39.5%</td>
+      <td><span class="st-m">0.15</span></td>
+      <td style="font-size:11px">F1/L0</td>
+      <td>26.4%<div class="bar"><div class="bfill" style="width:26.39%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">6コース</td>
+    </tr></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="race-card" id="card_12">
+      <div class="race-head" onclick="toggleRace(12)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="race-num">12R</span>
+          <div>
+            <div style="font-size:13px;font-weight:700">第29回東京スポーツ杯</div>
+            <div class="race-title">桐生特選 / 1800m / 締切20:35</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="copy-btn" id="copybtn_12" onclick="event.stopPropagation();copyRace(12)">📋 コピー</button>
+          <span class="toggle-icon" id="icon_12">▼</span>
+        </div>
+      </div>
+      
+      <div class="race-body " id="body_12">
+        <table class="btable">
+          <thead><tr>
+            <th>枠</th><th>選手名</th><th>級</th>
+            <th>全国勝率</th><th>当地勝率</th><th>2連率</th>
+            <th>平均ST</th><th>F/L</th><th>モーター2連率</th>
+            <th>展示</th><th>展示ST</th><th>進入</th>
+          </tr></thead>
+          <tbody><tr>
+      <td><span class="ln l1">1</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">常住 蓮</td>
+      <td><span class="rank A1">A1</span></td>
+      <td>7.48</td>
+      <td>5.00</td>
+      <td>59.2%</td>
+      <td><span class="st-f">0.12</span></td>
+      <td style="font-size:11px">F1/L0</td>
+      <td>35.5%<div class="bar"><div class="bfill" style="width:35.53%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">1コース</td>
+    </tr><tr>
+      <td><span class="ln l2">2</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">北中 元樹</td>
+      <td><span class="rank A2">A2</span></td>
+      <td>6.58</td>
+      <td>4.64</td>
+      <td>52.2%</td>
+      <td><span class="st-m">0.17</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>26.5%<div class="bar"><div class="bfill" style="width:26.47%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">2コース</td>
+    </tr><tr>
+      <td><span class="ln l3">3</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">一色 凌雅</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>5.19</td>
+      <td>3.83</td>
+      <td>30.5%</td>
+      <td><span class="st-s">0.20</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>42.7%<div class="bar"><div class="bfill" style="width:42.67%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">3コース</td>
+    </tr><tr>
+      <td><span class="ln l4">4</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">井上 尚悟</td>
+      <td><span class="rank B1">B1</span></td>
+      <td>4.84</td>
+      <td>3.76</td>
+      <td>30.3%</td>
+      <td><span class="st-m">0.18</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>31.5%<div class="bar"><div class="bfill" style="width:31.51%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">4コース</td>
+    </tr><tr>
+      <td><span class="ln l5">5</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">東本 勝利</td>
+      <td><span class="rank A1">A1</span></td>
+      <td>5.97</td>
+      <td>6.19</td>
+      <td>36.0%</td>
+      <td><span class="st-m">0.15</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>35.5%<div class="bar"><div class="bfill" style="width:35.53%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">5コース</td>
+    </tr><tr>
+      <td><span class="ln l6">6</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">向後 龍一</td>
+      <td><span class="rank A2">A2</span></td>
+      <td>5.77</td>
+      <td>6.30</td>
+      <td>39.7%</td>
+      <td><span class="st-m">0.15</span></td>
+      <td style="font-size:11px">F0/L0</td>
+      <td>32.0%<div class="bar"><div class="bfill" style="width:32%"></div></div></td>
+      <td>--</td>
+      <td>--</td>
+      <td style="font-size:11px">6コース</td>
+    </tr></tbody>
+        </table>
+      </div>
+    </div></div></div></div>
+</div>
+
+<footer>競艇出走表 — BoatraceOpenAPI使用 / データは参考用です</footer>
+
+<script>
+const VENUES={
+  1:"桐生",2:"戸田",3:"江戸川",4:"平和島",5:"多摩川",
+  6:"浜名湖",7:"蒲郡",8:"常滑",9:"津",10:"三国",
+  11:"びわこ",12:"住之江",13:"尼崎",14:"鳴門",15:"丸亀",
+  16:"児島",17:"宮島",18:"徳山",19:"下関",20:"若松",
+  21:"芦屋",22:"福岡",23:"唐津",24:"大村"
+};
+const WEATHER={1:"晴れ",2:"曇り",3:"雨",4:"霧",5:"雪"};
+const WIND_DIR={
+  1:"北",2:"北北東",3:"北東",4:"東北東",5:"東",6:"東南東",
+  7:"南東",8:"南南東",9:"南",10:"南南西",11:"南西",12:"西南西",
+  13:"西",14:"西北西",15:"北西",16:"北北西",17:"無風"
+};
+const CLASS={1:"A1",2:"A2",3:"B1",4:"B2"};
+
+let allPrograms=[];
+let allPreviews=[];
+let currentVenue=null;
+
+function getTodayJST(){
+  const now=new Date();
+  const jst=new Date(now.getTime()+9*60*60*1000);
+  const y=jst.getUTCFullYear();
+  const m=String(jst.getUTCMonth()+1).padStart(2,'0');
+  const d=String(jst.getUTCDate()).padStart(2,'0');
+  return `${y}${m}${d}`;
+}
+
+async function loadAll(){
+  const dateStr=getTodayJST();
+  const y=dateStr.slice(0,4);
+  document.getElementById('dateDisp').textContent=
+    `${y}年${parseInt(dateStr.slice(4,6))}月${parseInt(dateStr.slice(6,8))}日`;
+
+  const base=`https://boatraceopenapi.github.io`;
+  try{
+    const [pRes,pvRes]=await Promise.all([
+      fetch(`${base}/programs/v2/${y}/${dateStr}.json`),
+      fetch(`${base}/previews/v2/${y}/${dateStr}.json`).catch(()=>null)
+    ]);
+    if(!pRes.ok) throw new Error('データ取得失敗');
+    const pData=await pRes.json();
+    allPrograms=pData.programs||pData[Object.keys(pData)[0]]||[];
+    if(pvRes?.ok){
+      const pvData=await pvRes.json();
+      allPreviews=pvData.previews||pvData[Object.keys(pvData)[0]]||[];
+    }
+    renderVenueTabs();
+  }catch(e){
+    document.getElementById('mainContent').innerHTML=
+      `<div class="error">❌ ${e.message}<br><small>しばらく待ってから再読み込みしてください</small></div>`;
+  }
+}
+
+function renderVenueTabs(){
+  const venueNums=[...new Set(allPrograms.map(p=>p.race_stadium_number))].sort((a,b)=>a-b);
+  if(venueNums.length===0){
+    document.getElementById('mainContent').innerHTML='<div class="error">本日の開催データがありません</div>';
+    return;
+  }
+  currentVenue=venueNums[0];
+
+  const tabHtml=venueNums.map(v=>`
+    <button class="vtab ${v===currentVenue?'on':''}" onclick="switchVenue(${v})">
+      ${VENUES[v]||v}
+    </button>`).join('');
+
+  document.getElementById('mainContent').innerHTML=`
+    <div class="venue-tabs" id="venueTabs">${tabHtml}</div>
+    <div style="margin-bottom:12px">
+  <button onclick="copyAllRaces()" id="allCopyBtn" style="width:100%;padding:13px;background:linear-gradient(135deg,var(--accent),#007fa8);border:none;border-radius:10px;color:#000;font-size:15px;font-weight:900;cursor:pointer;">
+    📋 全レース一括コピー（このチャットに貼るだけで予想が出ます）
+  </button>
+</div>
+<div id="racesArea"></div>`;
+
+  renderRaces();
+}
+
+function switchVenue(v){
+  currentVenue=v;
+  document.querySelectorAll('.vtab').forEach(b=>{
+    b.classList.toggle('on', parseInt(b.textContent.trim())===v||
+      b.textContent.trim()===VENUES[v]);
+  });
+  // タブのon状態を名前で判定
+  document.querySelectorAll('.vtab').forEach(b=>{
+    const isOn = b.onclick.toString().includes(`(${v})`);
+    b.classList.toggle('on', isOn);
+  });
+  renderRaces();
+  window.scrollTo(0,0);
+}
+
+function renderRaces(){
+  const races=allPrograms
+    .filter(p=>p.race_stadium_number===currentVenue)
+    .sort((a,b)=>a.race_number-b.race_number);
+
+  if(races.length===0){
+    document.getElementById('racesArea').innerHTML='<div style="color:var(--dim);padding:20px">レースデータなし</div>';
+    return;
+  }
+
+  const html=races.map(r=>renderRaceCard(r)).join('');
+  document.getElementById('racesArea').innerHTML=`<div class="races-grid">${html}</div>`;
+}
+
+function renderRaceCard(program){
+  const raceNum=program.race_number;
+  const preview=allPreviews.find(
+    p=>p.race_stadium_number===currentVenue&&p.race_number===raceNum
+  );
+
+  // 天候
+  const wx=preview&&preview.race_weather_number?WEATHER[preview.race_weather_number]:'--';
+  const wind=preview&&preview.race_wind>0?
+    `${WIND_DIR[preview.race_wind_direction_number]||'--'} ${preview.race_wind}m`:'--';
+  const wave=preview&&preview.race_wave>0?`${preview.race_wave}cm`:'--';
+  const temp=preview&&preview.race_temperature>0?`${preview.race_temperature}℃`:'--';
+  const isRough=preview&&preview.race_wave>=10;
+  const isWindy=preview&&preview.race_wind>=5;
+
+  // 締切時間
+  const closedAt=program.race_closed_at?
+    program.race_closed_at.slice(11,16):'--:--';
+
+  // 展示最速
+  let fastEx=999;
+  if(preview?.boats){
+    Object.values(preview.boats).forEach(b=>{
+      if(b.racer_exhibition_time>0&&b.racer_exhibition_time<fastEx)
+        fastEx=b.racer_exhibition_time;
+    });
+  }
+
+  // 選手行
+  const boats=program.boats||[];
+  const rows=boats.map(b=>{
+    const lane=b.racer_boat_number;
+    const cls=CLASS[b.racer_class_number]||'B1';
+    const st=parseFloat(b.racer_average_start_timing||0);
+    const stCls=st<=0.14?'st-f':st>=0.20?'st-s':'st-m';
+    const motor2=parseFloat(b.racer_assigned_motor_top_2_percent||0);
+    const pv=preview?.boats?.[String(lane)];
+    const exT=pv?.racer_exhibition_time>0?parseFloat(pv.racer_exhibition_time):null;
+    const exST=pv?.racer_start_timing!=null&&pv?.racer_start_timing!==0?parseFloat(pv.racer_start_timing):null;
+    const course=pv?.racer_course_number||lane;
+    const exCls=exT&&fastEx<999&&exT<=fastEx+0.04?'st-f':'';
+    const courseChanged=pv&&course!==lane;
+
+    return `<tr>
+      <td><span class="ln l${lane}">${lane}</span></td>
+      <td style="text-align:left;font-weight:700;min-width:70px">${b.racer_name||'--'}</td>
+      <td><span class="rank ${cls}">${cls}</span></td>
+      <td>${parseFloat(b.racer_national_top_1_percent||0).toFixed(2)}</td>
+      <td>${parseFloat(b.racer_local_top_1_percent||0).toFixed(2)}</td>
+      <td>${parseFloat(b.racer_national_top_2_percent||0).toFixed(1)}%</td>
+      <td><span class="${stCls}">${st.toFixed(2)}</span></td>
+      <td style="font-size:11px">F${b.racer_flying_count||0}/L${b.racer_late_count||0}</td>
+      <td>${motor2.toFixed(1)}%<div class="bar"><div class="bfill" style="width:${Math.min(100,motor2)}%"></div></div></td>
+      <td>${exT?`<span class="${exCls}">${exT.toFixed(2)}</span>`:'--'}</td>
+      <td>${exST!=null?`<span class="${exST<0?'st-f':''}">${exST.toFixed(2)}</span>`:'--'}</td>
+      <td style="font-size:11px${courseChanged?';color:var(--accent2);font-weight:700':''}">${course}コース${courseChanged?'⚠':''}</td>
+    </tr>`;
+  }).join('');
+
+  // コピー用テキスト生成
+  const copyText=generateCopyText(program, preview, boats);
+
+  return `
+    <div class="race-card" id="card_${raceNum}">
+      <div class="race-head" onclick="toggleRace(${raceNum})">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="race-num">${raceNum}R</span>
+          <div>
+            <div style="font-size:13px;font-weight:700">${program.race_title||''}</div>
+            <div class="race-title">${program.race_subtitle||''} / ${program.race_distance||''}m / 締切${closedAt}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="copy-btn" id="copybtn_${raceNum}" onclick="event.stopPropagation();copyRace(${raceNum})">📋 コピー</button>
+          <span class="toggle-icon" id="icon_${raceNum}">▼</span>
+        </div>
+      </div>
+      ${wx!='--'||wave!='--'?`
+      <div class="wx-chips">
+        ${wx!='--'?`<div class="wx-chip">天候 <strong>${wx}</strong></div>`:''}
+        ${wind!='--'?`<div class="wx-chip ${isWindy?'warn':''}">風 <strong>${wind}</strong></div>`:''}
+        ${wave!='--'?`<div class="wx-chip ${isRough?'warn':''}">波 <strong>${wave}</strong></div>`:''}
+        ${temp!='--'?`<div class="wx-chip">気温 <strong>${temp}</strong></div>`:''}
+        ${isRough?'<div class="wx-chip warn">⚠ 荒水面</div>':''}
+        ${isWindy?'<div class="wx-chip warn">⚠ 強風</div>':''}
+      </div>`:''}
+      <div class="race-body ${raceNum===1?'show':''}" id="body_${raceNum}">
+        <table class="btable">
+          <thead><tr>
+            <th>枠</th><th>選手名</th><th>級</th>
+            <th>全国勝率</th><th>当地勝率</th><th>2連率</th>
+            <th>平均ST</th><th>F/L</th><th>モーター2連率</th>
+            <th>展示</th><th>展示ST</th><th>進入</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+
+  // copyTextをdata属性に保存
+  setTimeout(()=>{
+    const card=document.getElementById(`card_${raceNum}`);
+    if(card) card.dataset.copy=copyText;
+  },0);
+}
+
+function generateCopyText(program, preview, boats){
+  const raceNum=program.race_number;
+  const venueName=VENUES[currentVenue]||currentVenue;
+  const wx=preview&&preview.race_weather_number?WEATHER[preview.race_weather_number]:'不明';
+  const wind=preview&&preview.race_wind>0?
+    `${WIND_DIR[preview.race_wind_direction_number]||'--'} ${preview.race_wind}m`:'不明';
+  const wave=preview&&preview.race_wave>0?`${preview.race_wave}cm`:'不明';
+
+  let text=`【${venueName} ${raceNum}R】${program.race_title||''} ${program.race_subtitle||''}\n`;
+  text+=`天候:${wx} 風:${wind} 波:${wave}\n\n`;
+
+  boats.forEach(b=>{
+    const cls=CLASS[b.racer_class_number]||'B1';
+    const pv=preview?.boats?.[String(b.racer_boat_number)];
+    const exT=pv?.racer_exhibition_time>0?pv.racer_exhibition_time.toFixed(2):'--';
+    const exST=pv?.racer_start_timing!=null&&pv?.racer_start_timing!==0?pv.racer_start_timing.toFixed(2):'--';
+    const course=pv?.racer_course_number||b.racer_boat_number;
+    text+=`${b.racer_boat_number}号艇 ${b.racer_name} ${cls} `;
+    text+=`全国勝率${parseFloat(b.racer_national_top_1_percent||0).toFixed(2)} `;
+    text+=`当地勝率${parseFloat(b.racer_local_top_1_percent||0).toFixed(2)} `;
+    text+=`2連率${parseFloat(b.racer_national_top_2_percent||0).toFixed(1)}% `;
+    text+=`ST${parseFloat(b.racer_average_start_timing||0).toFixed(2)} `;
+    text+=`F${b.racer_flying_count||0}/L${b.racer_late_count||0} `;
+    text+=`モーター${parseFloat(b.racer_assigned_motor_top_2_percent||0).toFixed(1)}% `;
+    text+=`展示${exT} 展示ST${exST} ${course}コース\n`;
+  });
+
+  return text;
+}
+
+function toggleRace(raceNum){
+  const body=document.getElementById(`body_${raceNum}`);
+  const icon=document.getElementById(`icon_${raceNum}`);
+  if(body){
+    body.classList.toggle('show');
+    if(icon) icon.classList.toggle('open', body.classList.contains('show'));
+  }
+}
+
+function copyRace(raceNum){
+  const program=allPrograms.find(
+    p=>p.race_stadium_number===currentVenue&&p.race_number===raceNum
+  );
+  const preview=allPreviews.find(
+    p=>p.race_stadium_number===currentVenue&&p.race_number===raceNum
+  );
+  if(!program) return;
+
+  const text=generateCopyText(program, preview, program.boats||[]);
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.getElementById(`copybtn_${raceNum}`);
+    if(btn){
+      btn.textContent='✅ コピー済';
+      btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='📋 コピー';btn.classList.remove('copied');},2000);
+    }
+  }).catch(()=>{
+    // fallback
+    const ta=document.createElement('textarea');
+    ta.value=text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    const btn=document.getElementById(`copybtn_${raceNum}`);
+    if(btn){btn.textContent='✅ コピー済';btn.classList.add('copied');
+      setTimeout(()=>{btn.textContent='📋 コピー';btn.classList.remove('copied');},2000);}
+  });
+}
+
+// 会場タブのクリックを正しく処理
+document.addEventListener('click', e=>{
+  const vtab=e.target.closest('.vtab');
+  if(vtab){
+    const text=vtab.textContent.trim();
+    const v=Object.entries(VENUES).find(([k,v])=>v===text);
+    if(v){
+      document.querySelectorAll('.vtab').forEach(b=>b.classList.remove('on'));
+      vtab.classList.add('on');
+      currentVenue=parseInt(v[0]);
+      renderRaces();
+      window.scrollTo(0,0);
+    }
+  }
+});
+
+function copyAllRaces(){
+  const btn=document.getElementById('allCopyBtn');
+  const races=allPrograms
+    .filter(p=>p.race_stadium_number===currentVenue)
+    .sort((a,b)=>a.race_number-b.race_number);
+
+  if(races.length===0){alert('データがありません');return;}
+
+  let text=`【${VENUES[currentVenue]}競艇場 全レースデータ】\n`;
+  text+=`${document.getElementById('dateDisp').textContent}\n`;
+  text+='='+'='.repeat(40)+'\n\n';
+
+  races.forEach(r=>{
+    const preview=allPreviews.find(
+      p=>p.race_stadium_number===currentVenue&&p.race_number===r.race_number
+    );
+    text+=generateCopyText(r, preview, r.boats||[]);
+    text+='\n';
+  });
+
+  text+='\n以上のデータで全レースの予想をお願いします。\n予算は1レースあたり300円（本線100・抑え100・穴100）です。\n理由も教えてください。';
+
+  navigator.clipboard.writeText(text).then(()=>{
+    btn.textContent='✅ コピー完了！このチャットに貼り付けてください';
+    btn.style.background='linear-gradient(135deg,var(--green),#16a34a)';
+    setTimeout(()=>{
+      btn.textContent='📋 全レース一括コピー（このチャットに貼るだけで予想が出ます）';
+      btn.style.background='linear-gradient(135deg,var(--accent),#007fa8)';
+    },3000);
+  }).catch(()=>{
+    const ta=document.createElement('textarea');
+    ta.value=text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent='✅ コピー完了！このチャットに貼り付けてください';
+    btn.style.background='linear-gradient(135deg,var(--green),#16a34a)';
+    setTimeout(()=>{
+      btn.textContent='📋 全レース一括コピー（このチャットに貼るだけで予想が出ます）';
+      btn.style.background='linear-gradient(135deg,var(--accent),#007fa8)';
+    },3000);
+  });
+}
+
+loadAll();
+</script>
+
+
+</body></html>
